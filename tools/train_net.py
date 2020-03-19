@@ -74,7 +74,7 @@ def log_model_info(model):
 
 
 def train_epoch(
-    train_loader, model, loss_fun, optimizer, train_meter, cur_epoch
+    cfg, train_loader, model, loss_fun, optimizer, train_meter, cur_epoch
 ):
     """Performs one epoch of training."""
 
@@ -89,8 +89,10 @@ def train_epoch(
 
     for cur_iter, (inputs, labels) in enumerate(train_loader):
         # Transfer the data to the current GPU device
-        inputs, labels = torch.tensor(inputs).cuda(non_blocking=True), \
-            torch.tensor(labels).cuda(non_blocking=True)
+        if cfg.USE_DPFLOW:
+            inputs = torch.tenor(inputs)
+            labels = torch.tensor(labels)
+        inputs, labels = inputs.cuda(), labels.cuda(non_blocking=True)
         # Perform the forward pass
         preds = model(inputs)
         # Compute the loss
@@ -127,7 +129,7 @@ def train_epoch(
 
 
 @torch.no_grad()
-def test_epoch(test_loader, model, test_meter, cur_epoch):
+def test_epoch(cfg, test_loader, model, test_meter, cur_epoch):
     """Evaluates the model on the test set."""
 
     # Enable eval mode
@@ -205,7 +207,7 @@ def train_model():
     for cur_epoch in range(start_epoch, cfg.OPTIM.MAX_EPOCH):
         # Train for one epoch
         train_epoch(
-            train_loader, model, loss_fun, optimizer, train_meter, cur_epoch
+            cfg, train_loader, model, loss_fun, optimizer, train_meter, cur_epoch
         )
         # Compute precise BN stats
         if cfg.BN.USE_PRECISE_STATS:
@@ -216,7 +218,7 @@ def train_model():
             logger.info('Wrote checkpoint to: {}'.format(checkpoint_file))
         # Evaluate the model
         if is_eval_epoch(cur_epoch):
-            test_epoch(test_loader, model, test_meter, cur_epoch)
+            test_epoch(cfg, test_loader, model, test_meter, cur_epoch)
 
 
 def single_proc_train():
