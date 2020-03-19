@@ -15,7 +15,11 @@ _DEF_DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 # Data paths
 _paths = {
     'cifar10': _DEF_DATA_DIR + '/cifar10',
-    'imagenet': _DEF_DATA_DIR + '/imagenet'
+    'imagenet': _DEF_DATA_DIR + '/imagenet',
+    'imagenet_dpflow': {
+        "train": "s3://research-model/Dataset/ILSVRC2012/imagenet.train.nori.list",
+        "val": "s3://research-model/Dataset/ILSVRC2012/imagenet.val.nori.list",
+    }
 }
 
 

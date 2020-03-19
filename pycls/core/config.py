@@ -295,6 +295,10 @@ _C.PREC_TIME.NUM_ITER = 30
 # Number of GPUs to use (applies to both training and testing)
 _C.NUM_GPUS = 1
 
+# Number of machines used as dpflow
+_C.USE_DPFLOW = False
+_C.NUM_REPLICAS = 1
+
 # Output directory
 _C.OUT_DIR = '/tmp'
 

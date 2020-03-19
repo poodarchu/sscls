@@ -225,9 +225,9 @@ class ResNet(nn.Module):
     """ResNet model."""
 
     def __init__(self):
-        assert cfg.TRAIN.DATASET in ['cifar10', 'imagenet'], \
+        assert cfg.TRAIN.DATASET in ['cifar10', 'imagenet', 'imagenet_dpflow'], \
             'Training ResNet on {} is not supported'.format(cfg.TRAIN.DATASET)
-        assert cfg.TEST.DATASET in ['cifar10', 'imagenet'], \
+        assert cfg.TEST.DATASET in ['cifar10', 'imagenet', 'imagenet_dpflow'], \
             'Testing ResNet on {} is not supported'.format(cfg.TEST.DATASET)
         super(ResNet, self).__init__()
         if 'cifar' in cfg.TRAIN.DATASET:

@@ -15,13 +15,17 @@ import torch
 from pycls.core.config import cfg
 from pycls.datasets.cifar10 import Cifar10
 from pycls.datasets.imagenet import ImageNet
+from pycls.datasets.imagenet_dp import ImageNetDP
+
+from pycls.datasets.custom_loader import DPFlowDataLoader
 
 import pycls.datasets.paths as dp
 
 # Supported datasets
 _DATASET_CATALOG = {
     'cifar10': Cifar10,
-    'imagenet': ImageNet
+    'imagenet': ImageNet,
+    'imagenet_dpflow': ImageNetDP,
 }
 
 
@@ -38,15 +42,26 @@ def _construct_loader(dataset_name, split, batch_size, shuffle, drop_last):
     # Create a sampler for multi-process training
     sampler = DistributedSampler(dataset) if cfg.NUM_GPUS > 1 else None
     # Create a loader
-    loader = torch.utils.data.DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=(False if sampler else shuffle),
-        sampler=sampler,
-        num_workers=cfg.DATA_LOADER.NUM_WORKERS,
-        pin_memory=cfg.DATA_LOADER.PIN_MEMORY,
-        drop_last=drop_last
-    )
+    if not cfg.USE_DPFLOW:
+        loader = torch.utils.data.DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=(False if sampler else shuffle),
+            sampler=sampler,
+            num_workers=cfg.DATA_LOADER.NUM_WORKERS,
+            pin_memory=cfg.DATA_LOADER.PIN_MEMORY,
+            drop_last=drop_last
+        )
+    else:
+        loader = DPFlowDataLoader(
+            dataset,
+            dataset_name=dataset_name,
+            batch_size=batch_size * cfg.NUM_GPUS,
+            nr_gpu=cfg.NUM_GPUS,
+            num_machines=cfg.NUM_REPLICAS,
+            num_workers=cfg.DATA_LOADER.NUM_WORKERS,
+            preemptible=False
+        )
     return loader
 
 
@@ -73,10 +88,11 @@ def construct_test_loader():
 
 
 def shuffle(loader, cur_epoch):
-    """"Shuffles the data."""
-    assert isinstance(loader.sampler, (RandomSampler, DistributedSampler)), \
-        'Sampler type \'{}\' not supported'.format(type(loader.sampler))
-    # RandomSampler handles shuffling automatically
-    if isinstance(loader.sampler, DistributedSampler):
-        # DistributedSampler shuffles data based on epoch
-        loader.sampler.set_epoch(cur_epoch)
+    if isinstance(loader, torch.utils.data.DataLoader):
+        """"Shuffles the data."""
+        assert isinstance(loader.sampler, (RandomSampler, DistributedSampler)), \
+            'Sampler type \'{}\' not supported'.format(type(loader.sampler))
+        # RandomSampler handles shuffling automatically
+        if isinstance(loader.sampler, DistributedSampler):
+            # DistributedSampler shuffles data based on epoch
+            loader.sampler.set_epoch(cur_epoch)

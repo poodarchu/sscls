@@ -89,7 +89,8 @@ def train_epoch(
 
     for cur_iter, (inputs, labels) in enumerate(train_loader):
         # Transfer the data to the current GPU device
-        inputs, labels = inputs.cuda(), labels.cuda(non_blocking=True)
+        inputs, labels = torch.tensor(inputs).cuda(non_blocking=True), \
+            torch.tensor(labels).cuda(non_blocking=True)
         # Perform the forward pass
         preds = model(inputs)
         # Compute the loss
@@ -99,19 +100,23 @@ def train_epoch(
         loss.backward()
         # Update the parameters
         optimizer.step()
-        # Compute the errors
+
         top1_err, top5_err = mu.topk_errors(preds, labels, [1, 5])
-        # Combine the stats across the GPUs
+        # # Combine the stats across the GPUs
         if cfg.NUM_GPUS > 1:
             loss, top1_err, top5_err = du.scaled_all_reduce(
                 [loss, top1_err, top5_err]
             )
         # Copy the stats from GPU to CPU (sync point)
-        loss, top1_err, top5_err = loss.item(), top1_err.item(), top5_err.item()
+        top1_err, top5_err = top1_err.item(), top5_err.item()
+
+        loss = loss.item()
+
         train_meter.iter_toc()
         # Update and log stats
         train_meter.update_stats(
-            top1_err, top5_err, loss, lr, inputs.size(0) * cfg.NUM_GPUS
+            loss, lr, inputs.size(0) * cfg.NUM_GPUS, top1_err, top5_err
+            # loss, lr, inputs.size(0) * cfg.NUM_GPUS, 0, 0
         )
         train_meter.log_iter_stats(cur_epoch, cur_iter)
         train_meter.iter_tic()
@@ -129,7 +134,10 @@ def test_epoch(test_loader, model, test_meter, cur_epoch):
     model.eval()
     test_meter.iter_tic()
 
+    # for cur_iter, batch in enumerate(test_loader):
     for cur_iter, (inputs, labels) in enumerate(test_loader):
+        # inputs = batch['data']
+        # labels = batch['label']
         # Transfer the data to the current GPU device
         inputs, labels = inputs.cuda(), labels.cuda(non_blocking=True)
         # Compute the predictions
