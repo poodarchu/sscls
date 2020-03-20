@@ -7,7 +7,6 @@
 
 """ImageNet dataset."""
 
-import cv2
 import numpy as np
 import torch
 import torch.utils.data
@@ -15,6 +14,7 @@ import nori2 as nori
 from brainpp.oss import OSSPath
 
 from pycls.core.config import cfg
+from pycls.datasets.utils import imgproc
 
 import pycls.datasets.transforms as transforms
 import pycls.utils.logging as lu
@@ -86,8 +86,7 @@ class ImageNetDP(torch.utils.data.Dataset):
         if not self.fetcher:
             self.fetcher = nori.Fetcher()
         nid, label = self.nid_labels[index]
-        data = np.fromstring(self.fetcher.get(nid), np.uint8)
-        img = cv2.imdecode(data, cv2.IMREAD_COLOR)[..., :3]
+        img = imgproc.imdecode(self.fetcher.get(nid))[..., :3]
         img = self.transform(img)
         return img, label
 

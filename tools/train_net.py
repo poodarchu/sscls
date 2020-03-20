@@ -92,7 +92,7 @@ def train_epoch(
         if cfg.USE_DPFLOW:
             inputs = torch.from_numpy(inputs)
             labels = torch.from_numpy(labels)
-        inputs, labels = inputs.float().cuda(), labels.cuda(non_blocking=True)
+        inputs, labels = inputs.cuda(), labels.cuda()
         # Perform the forward pass
         preds = model(inputs)
         # Compute the loss
