@@ -17,8 +17,11 @@ _paths = {
     'cifar10': _DEF_DATA_DIR + '/cifar10',
     'imagenet': _DEF_DATA_DIR + '/imagenet',
     'imagenet_dpflow': {
-        "train": "s3://research-model/Dataset/ILSVRC2012/imagenet.train.nori.list",
-        "val": "s3://research-model/Dataset/ILSVRC2012/imagenet.val.nori.list",
+        # "train": "/data/Datasets/ILSVRC2012/imagenet.train.nori.list",
+        # "val": "/data/Datasets/ILSVRC2012/imagenet.val.nori.list",
+        "train": "s3://generalDetection/ILSVRC2012/imagenet.train.nori.list",
+        "val": "s3://generalDetection/ILSVRC2012/imagenet.val.nori.list",
+
     }
 }
 

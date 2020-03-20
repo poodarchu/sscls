@@ -90,9 +90,9 @@ def train_epoch(
     for cur_iter, (inputs, labels) in enumerate(train_loader):
         # Transfer the data to the current GPU device
         if cfg.USE_DPFLOW:
-            inputs = torch.tenor(inputs)
-            labels = torch.tensor(labels)
-        inputs, labels = inputs.cuda(), labels.cuda(non_blocking=True)
+            inputs = torch.from_numpy(inputs)
+            labels = torch.from_numpy(labels)
+        inputs, labels = inputs.float().cuda(), labels.cuda(non_blocking=True)
         # Perform the forward pass
         preds = model(inputs)
         # Compute the loss
@@ -138,8 +138,9 @@ def test_epoch(cfg, test_loader, model, test_meter, cur_epoch):
 
     # for cur_iter, batch in enumerate(test_loader):
     for cur_iter, (inputs, labels) in enumerate(test_loader):
-        # inputs = batch['data']
-        # labels = batch['label']
+        if cfg.USE_DPFLOW:
+            inputs = torch.from_numpy(inputs)
+            labels = torch.from_numpy(labels)
         # Transfer the data to the current GPU device
         inputs, labels = inputs.cuda(), labels.cuda(non_blocking=True)
         # Compute the predictions

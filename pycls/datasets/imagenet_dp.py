@@ -47,14 +47,15 @@ class ImageNetDP(torch.utils.data.Dataset):
         self.nid_filename = self._data_path[self._split]
         self.fetcher = None
 
-    @property
-    def nid_labels(self):
-        labels = []
-        with OSSPath(self.nid_filename).open("r") as f:
-            for line in f.readlines():
-                nid, label, _ = line.strip().split("\t")
-                labels.append((nid, int(label)))
-        return labels
+        self.nid_labels = []
+        if "://" in self.nid_filename:
+            f = OSSPath(self.nid_filename).open("r")
+        else:
+            f = open(self.nid_filename, "r")
+        for line in f.readlines():
+            nid, label, _ = line.strip().split("\t")
+            self.nid_labels.append((nid, int(label)))
+        f.close()
 
     def _prepare_im(self, im):
         """Prepares the image for network input."""

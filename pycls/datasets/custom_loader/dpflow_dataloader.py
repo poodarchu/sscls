@@ -93,22 +93,22 @@ class DPFlowDataLoader:
 
             for i in range(self.num_machines):
 
-                _multiprocess_worker_loop(
-                    dataset=self.dataset,
-                    dataset_name=self.dataset_name,
-                    num_workers=self.num_workers,
-                    batch_size=self.batch_size // self.nr_gpu,
-                    **kwargs,
-                )
-
-                # self._executor.submit(
-                #     _multiprocess_worker_loop,
+                # _multiprocess_worker_loop(
                 #     dataset=self.dataset,
                 #     dataset_name=self.dataset_name,
                 #     num_workers=self.num_workers,
                 #     batch_size=self.batch_size // self.nr_gpu,
                 #     **kwargs,
                 # )
+
+                self._executor.submit(
+                    _multiprocess_worker_loop,
+                    dataset=self.dataset,
+                    dataset_name=self.dataset_name,
+                    num_workers=self.num_workers,
+                    batch_size=self.batch_size // self.nr_gpu,
+                    **kwargs,
+                )
 
     def __len__(self):
         return len(self.dataset) // self.batch_size
