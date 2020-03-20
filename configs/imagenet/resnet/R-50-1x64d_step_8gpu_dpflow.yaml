@@ -23,6 +23,7 @@ TRAIN:
   SPLIT: train
   BATCH_SIZE: 256 
   IM_SIZE: 224
+  CHECKPOINT_PERIOD: 10
   EVAL_PERIOD: 10
 TEST:
   DATASET: imagenet_dpflow

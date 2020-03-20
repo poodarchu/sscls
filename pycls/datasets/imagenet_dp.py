@@ -88,7 +88,7 @@ class ImageNetDP(torch.utils.data.Dataset):
         nid, label = self.nid_labels[index]
         img = imgproc.imdecode(self.fetcher.get(nid))[..., :3]
         img = self.transform(img)
-        return img, label
+        return img.astype(np.float32), label
 
     def __len__(self):
         return len(self.nid_labels)
