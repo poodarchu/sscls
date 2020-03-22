@@ -17,8 +17,8 @@ Please see [`INSTALL.md`](docs/INSTALL.md) for installation instructions.
 After installation, please see [`GETTING_STARTED.md`](docs/GETTING_STARTED.md) for basic instructions on training and evaluation with **pycls**.
 
 ## Model Zoo
+* resnet-50 epoch: 100, top1_err: 23.484001, top5_err: 6.814002
 
-Coming soon!
 
 ## Citing pycls
 
