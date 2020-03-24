@@ -1,8 +1,8 @@
 # Installation Instructions
 
-This document covers how to install **pycls** and its dependencies.
+This document covers how to install **sscls** and its dependencies.
 
-- For general information about **pycls**, please see [`README.md`](../README.md)
+- For general information about **sscls**, please see [`README.md`](../README.md)
 
 **Requirements:**
 
@@ -11,38 +11,37 @@ This document covers how to install **pycls** and its dependencies.
 
 **Notes:**
 
-- **pycls** does not currently support running on CPU; a GPU system is required
-- **pycls** has been tested with CUDA 9.2 and cuDNN 7.1
+- **sscls** does not currently support running on CPU; a GPU system is required
+- **sscls** has been tested with CUDA 10.1 and cuDNN 7.6
 
 ## PyTorch
 
 To install PyTorch with CUDA support, follow the [installation instructions](https://pytorch.org/get-started/locally/) from the [PyTorch website](https://pytorch.org).
 
-## pycls
+## sscls
 
-Clone the **pycls** repository:
+Clone the **sscls** repository:
 
 ```
-# PYCLS=/path/to/clone/pycls
-git clone https://github.com/facebookresearch/pycls $PYCLS
+git clone https://github.com/poodarchu/sscls 
 ```
 
 Install Python dependencies:
 
 ```
-pip install -r $PYCLS/requirements.txt
+pip install -r requirements.txt
 ```
 
 Set up Python modules:
 
 ```
-cd $PYCLS && make
+python setup.py build develop
 ```
 
 ## Datasets
 
-**pycls** finds datasets via symlinks from `pycls/datasets/data` to the actual locations where the dataset images and annotations are stored. For instructions on how to create symlinks for CIFAR and ImageNet, please see [`DATA.md`](DATA.md).
+**sscls** finds datasets via symlinks from `sscls/datasets/data` to the actual locations where the dataset images and annotations are stored. For instructions on how to create symlinks for CIFAR and ImageNet, please see [`DATA.md`](DATA.md). Apart from basic folder dataset, we also add DPFlow and Nori support, such as [ImageNetDP](sscls/datasets/imagenet_dp.py)
 
 ## Getting Started
 
-Please see [`GETTING_STARTED.md`](GETTING_STARTED.md) for basic instructions on training and evaluation with **pycls**.
+Please see [`GETTING_STARTED.md`](GETTING_STARTED.md) for basic instructions on training and evaluation with **sscls**.
