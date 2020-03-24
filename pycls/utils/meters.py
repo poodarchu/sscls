@@ -113,13 +113,13 @@ class TrainMeter(object):
             '_type': 'train_iter',
             'epoch': '{}/{}'.format(cur_epoch + 1, cfg.OPTIM.MAX_EPOCH),
             'iter': '{}/{}'.format(cur_iter + 1, self.epoch_iters),
-            'time_avg': self.iter_timer.average_time,
-            'time_diff': self.iter_timer.diff,
+            # 'time_diff': self.iter_timer.diff,
             'eta': eta_str(eta_td),
+            'loss': self.loss.get_win_median(),
             'top1_err': self.mb_top1_err.get_win_median(),
             'top5_err': self.mb_top5_err.get_win_median(),
-            'loss': self.loss.get_win_median(),
             'lr': self.lr,
+            'time_avg': self.iter_timer.average_time,
             'mem': int(np.ceil(mem_usage))
         }
         return stats
@@ -142,12 +142,12 @@ class TrainMeter(object):
         stats = {
             '_type': 'train_epoch',
             'epoch': '{}/{}'.format(cur_epoch + 1, cfg.OPTIM.MAX_EPOCH),
-            'time_avg': self.iter_timer.average_time,
             'eta': eta_str(eta_td),
+            'loss': avg_loss,
             'top1_err': top1_err,
             'top5_err': top5_err,
-            'loss': avg_loss,
             'lr': self.lr,
+            'time_avg': self.iter_timer.average_time,
             'mem': int(np.ceil(mem_usage))
         }
         return stats

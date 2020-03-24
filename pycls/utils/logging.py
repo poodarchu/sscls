@@ -70,7 +70,8 @@ def log_json_stats(stats):
         k: decimal.Decimal('{:.6f}'.format(v)) if isinstance(v, float) else v
         for k, v in stats.items()
     }
-    json_stats = simplejson.dumps(stats, sort_keys=True, use_decimal=True)
+    json_stats = simplejson.dumps(stats, sort_keys=False, use_decimal=True)
+    json_stats = "".join([s for s in json_stats if s != '"'])
     logger = get_logger(__name__)
     logger.info('{:s}{:s}'.format(_TAG, json_stats))
 
