@@ -92,18 +92,28 @@ def train_epoch(
         if cfg.USE_DPFLOW:
             inputs = torch.from_numpy(inputs)
             labels = torch.from_numpy(labels)
-        inputs, labels = inputs.cuda(), labels.cuda()
+
+        if isinstance(inputs, list):
+            inputs = [i.cuda(non_blocking=True) for i in inputs]
+            labels = labels.cuda(non_blocking=True)
+        else:
+            inputs, labels = inputs.cuda(), labels.cuda()
         # Perform the forward pass
         preds = model(inputs)
+        if cfg.MODEL.TYPE == 'moco':
+            targets = preds[1]
+            preds = preds[0]
+        else:
+            targets = labels
         # Compute the loss
-        loss = loss_fun(preds, labels)
+        loss = loss_fun(preds, targets)
         # Perform the backward pass
         optimizer.zero_grad()
         loss.backward()
         # Update the parameters
         optimizer.step()
 
-        top1_err, top5_err = mu.topk_errors(preds, labels, [1, 5])
+        top1_err, top5_err = mu.topk_errors(preds, targets, [1, 5])
         # # Combine the stats across the GPUs
         if cfg.NUM_GPUS > 1:
             loss, top1_err, top5_err = du.scaled_all_reduce(
@@ -117,7 +127,7 @@ def train_epoch(
         train_meter.iter_toc()
         # Update and log stats
         train_meter.update_stats(
-            loss, lr, inputs.size(0) * cfg.NUM_GPUS, top1_err, top5_err
+            loss, lr, inputs[0].size(0) * cfg.NUM_GPUS, top1_err, top5_err
             # loss, lr, inputs.size(0) * cfg.NUM_GPUS, 0, 0
         )
         train_meter.log_iter_stats(cur_epoch, cur_iter)

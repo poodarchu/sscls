@@ -10,9 +10,10 @@
 import torch
 
 from pycls.core.config import cfg
-from pycls.models.anynet import AnyNet
-from pycls.models.effnet import EffNet
-from pycls.models.resnet import ResNet
+from pycls.models.cls.anynet import AnyNet
+from pycls.models.cls.effnet import EffNet
+from pycls.models.cls.resnet import ResNet
+from pycls.models.moco.builder import MoCo
 
 import pycls.utils.logging as lu
 
@@ -23,6 +24,7 @@ _models = {
     'anynet': AnyNet,
     'effnet': EffNet,
     'resnet': ResNet,
+    'moco': MoCo
 }
 
 
@@ -33,7 +35,7 @@ def build_model():
     assert cfg.NUM_GPUS <= torch.cuda.device_count(), \
         'Cannot use more GPU devices than available'
     # Construct the model
-    model = _models[cfg.MODEL.TYPE]()
+    model = _models[cfg.MODEL.TYPE](cfg)
     # Determine the GPU used by the current process
     cur_device = torch.cuda.current_device()
     # Transfer the model to the current GPU device

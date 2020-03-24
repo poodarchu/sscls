@@ -21,8 +21,15 @@ _paths = {
         # "val": "/data/Datasets/ILSVRC2012/imagenet.val.nori.list",
         "train": "s3://generalDetection/ILSVRC2012/imagenet.train.nori.list",
         "val": "s3://generalDetection/ILSVRC2012/imagenet.val.nori.list",
+    },
+    'imagenet_dpflow_moco': {
+        # "train": "/data/Datasets/ILSVRC2012/imagenet.train.nori.list",
+        # "val": "/data/Datasets/ILSVRC2012/imagenet.val.nori.list",
+        "train": "s3://generalDetection/ILSVRC2012/imagenet.train.nori.list",
+        "val": "s3://generalDetection/ILSVRC2012/imagenet.val.nori.list",
 
-    }
+    },
+
 }
 
 

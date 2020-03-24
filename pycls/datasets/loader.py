@@ -16,7 +16,7 @@ from pycls.core.config import cfg
 from pycls.datasets.cifar10 import Cifar10
 from pycls.datasets.imagenet import ImageNet
 from pycls.datasets.imagenet_dp import ImageNetDP
-
+from pycls.datasets.imagenet_dp_moco import ImageNetDPMoCo
 from pycls.datasets.custom_loader import DPFlowDataLoader
 
 import pycls.datasets.paths as dp
@@ -26,6 +26,7 @@ _DATASET_CATALOG = {
     'cifar10': Cifar10,
     'imagenet': ImageNet,
     'imagenet_dpflow': ImageNetDP,
+    'imagenet_dpflow_moco': ImageNetDPMoCo,
 }
 
 
