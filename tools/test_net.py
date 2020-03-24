@@ -9,21 +9,20 @@
 
 import argparse
 import numpy as np
-import os
 import sys
 import torch
 
-from pycls.core.config import assert_cfg
-from pycls.core.config import cfg
-from pycls.utils.meters import TestMeter
+from sscls.core.config import assert_cfg
+from sscls.core.config import cfg
+from sscls.utils.meters import TestMeter
 
-import pycls.core.model_builder as model_builder
-import pycls.datasets.loader as loader
-import pycls.utils.checkpoint as cu
-import pycls.utils.distributed as du
-import pycls.utils.logging as lu
-import pycls.utils.metrics as mu
-import pycls.utils.multiprocessing as mpu
+import sscls.modeling.builder as model_builder
+import sscls.datasets.loader as loader
+import sscls.utils.checkpoint as cu
+import sscls.utils.distributed as du
+import sscls.utils.logging as lu
+import sscls.utils.metrics as mu
+import sscls.utils.multiprocessing as mpu
 
 logger = lu.get_logger(__name__)
 
@@ -42,7 +41,7 @@ def parse_args():
     )
     parser.add_argument(
         'opts',
-        help='See pycls/core/config.py for all options',
+        help='See sscls/core/config/defaults.py for all options',
         default=None,
         nargs=argparse.REMAINDER
     )

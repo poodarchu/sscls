@@ -5,12 +5,12 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-"""Setup pycls."""
+"""Setup sscls."""
 
 from setuptools import setup
 
 
 setup(
-    name='pycls',
-    packages=['pycls']
+    name='sscls',
+    packages=['sscls']
 )

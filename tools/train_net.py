@@ -13,23 +13,20 @@ import os
 import sys
 import torch
 
-from pycls.core.config import assert_cfg
-from pycls.core.config import cfg
-from pycls.core.config import dump_cfg
-from pycls.utils.meters import TestMeter
-from pycls.utils.meters import TrainMeter
+import sscls.modeling.loss.builder as losses
+import sscls.modeling.builder as model_builder
+import sscls.solver.optimizer as optim
+import sscls.datasets.loader as loader
+import sscls.utils.benchmark as bu
+import sscls.utils.checkpoint as cu
+import sscls.utils.distributed as du
+import sscls.utils.logging as lu
+import sscls.utils.metrics as mu
+import sscls.utils.multiprocessing as mpu
+import sscls.utils.net as nu
 
-import pycls.core.losses as losses
-import pycls.core.model_builder as model_builder
-import pycls.core.optimizer as optim
-import pycls.datasets.loader as loader
-import pycls.utils.benchmark as bu
-import pycls.utils.checkpoint as cu
-import pycls.utils.distributed as du
-import pycls.utils.logging as lu
-import pycls.utils.metrics as mu
-import pycls.utils.multiprocessing as mpu
-import pycls.utils.net as nu
+from sscls.core.config import cfg, dump_cfg, assert_cfg
+from sscls.utils.meters import TrainMeter, TestMeter
 
 logger = lu.get_logger(__name__)
 
@@ -48,7 +45,7 @@ def parse_args():
     )
     parser.add_argument(
         'opts',
-        help='See pycls/core/config.py for all options',
+        help='See sscls/core/config/defaults.py for all options',
         default=None,
         nargs=argparse.REMAINDER
     )
@@ -60,7 +57,7 @@ def parse_args():
 
 def is_eval_epoch(cur_epoch):
     """Determines if the model should be evaluated at the current epoch."""
-    return (
+    return cfg.TRAIN.EVAL_PERIOD != -1 and (
         (cur_epoch + 1) % cfg.TRAIN.EVAL_PERIOD == 0 or
         (cur_epoch + 1) == cfg.OPTIM.MAX_EPOCH
     )
@@ -96,8 +93,11 @@ def train_epoch(
         if isinstance(inputs, list):
             inputs = [i.cuda(non_blocking=True) for i in inputs]
             labels = labels.cuda(non_blocking=True)
+            input_size = inputs[0].size()[0]
         else:
             inputs, labels = inputs.cuda(), labels.cuda()
+            input_size = inputs.size()[0]
+
         # Perform the forward pass
         preds = model(inputs)
         if cfg.MODEL.TYPE == 'moco':
@@ -127,8 +127,7 @@ def train_epoch(
         train_meter.iter_toc()
         # Update and log stats
         train_meter.update_stats(
-            loss, lr, inputs[0].size(0) * cfg.NUM_GPUS, top1_err, top5_err
-            # loss, lr, inputs.size(0) * cfg.NUM_GPUS, 0, 0
+            loss, lr, input_size * cfg.NUM_GPUS, top1_err, top5_err
         )
         train_meter.log_iter_stats(cur_epoch, cur_iter)
         train_meter.iter_tic()
@@ -151,12 +150,25 @@ def test_epoch(cfg, test_loader, model, test_meter, cur_epoch):
         if cfg.USE_DPFLOW:
             inputs = torch.from_numpy(inputs)
             labels = torch.from_numpy(labels)
+
         # Transfer the data to the current GPU device
-        inputs, labels = inputs.cuda(), labels.cuda(non_blocking=True)
+        if isinstance(inputs, list):
+            inputs = [i.cuda(non_blocking=True) for i in inputs]
+            labels = labels.cuda(non_blocking=True)
+            input_size = inputs[0].size(0)
+        else:
+            inputs, labels = inputs.cuda(), labels.cuda()
+            input_size = inputs.size(0)
+
         # Compute the predictions
         preds = model(inputs)
+        if cfg.MODEL.TYPE == 'moco':
+            targets = preds[1]
+            preds = preds[0]
+        else:
+            targets = labels
         # Compute the errors
-        top1_err, top5_err = mu.topk_errors(preds, labels, [1, 5])
+        top1_err, top5_err = mu.topk_errors(preds, targets, [1, 5])
         # Combine the errors across the GPUs
         if cfg.NUM_GPUS > 1:
             top1_err, top5_err = du.scaled_all_reduce([top1_err, top5_err])
@@ -165,7 +177,7 @@ def test_epoch(cfg, test_loader, model, test_meter, cur_epoch):
         test_meter.iter_toc()
         # Update and log stats
         test_meter.update_stats(
-            top1_err, top5_err, inputs.size(0) * cfg.NUM_GPUS
+            top1_err, top5_err, input_size * cfg.NUM_GPUS
         )
         test_meter.log_iter_stats(cur_epoch, cur_iter)
         test_meter.iter_tic()

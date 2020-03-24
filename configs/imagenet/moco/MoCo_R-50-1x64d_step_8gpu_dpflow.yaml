@@ -1,6 +1,6 @@
 MODEL:
   TYPE: moco 
-  DEPTH: 50  # specify encoder xxx
+  DEPTH: 50
   NUM_CLASSES: 1000
 RESNET:
   TRANS_FUN: bottleneck_transform
@@ -12,16 +12,16 @@ MOCO:
   DIM: 128
   K: 65536
   MOMENTUM: 0.999
-  TAU: 0.2
-  # v2 setting
-  MLP: True 
-  V2_AUG: True 
-  # COS: True
+  TAU: 0.07
+  MLP: False
+  V2_AUG: False
+  COS: False
 BN:
   ZERO_INIT_FINAL_GAMMA: True
 OPTIM:
   BASE_LR: 0.03
-  LR_POLICY: cos  # moco v2 use cos  
+  LR_POLICY: steps
+  STEPS: [0, 120, 160]
   LR_MULT: 0.1
   MAX_EPOCH: 200 
   MOMENTUM: 0.9
@@ -33,12 +33,12 @@ TRAIN:
   BATCH_SIZE: 256 
   IM_SIZE: 224
   CHECKPOINT_PERIOD: 25
-  EVAL_PERIOD: -1 
+  EVAL_PERIOD: -1  # do not eval
 TEST:
   DATASET: imagenet_dpflow_moco
   SPLIT: val
-  BATCH_SIZE: 200 
-  IM_SIZE: 256
+  BATCH_SIZE: 256 
+  IM_SIZE: 224
 NUM_GPUS: 8
 USE_DPFLOW: False 
 NUM_REPLICAS: 2
