@@ -31,17 +31,23 @@ cifar10
 Create a directory containing symlinks:
 
 ```
-mkdir -p /path/pycls/pycls/datasets/data
+mkdir -p /path/sscls/sscls/datasets/data
 ```
 
 Symlink ImageNet:
 
 ```
-ln -s /path/imagenet /path/pycls/pycls/datasets/data/imagenet
+ln -s /path/imagenet /path/sscls/sscls/datasets/data/imagenet
 ```
 
 Symlink CIFAR-10:
 
 ```
-ln -s /path/cifar10 /path/pycls/pycls/datasets/data/cifar10
+ln -s /path/cifar10 /path/sscls/sscls/datasets/data/cifar10
+```
+
+If you want to use Nori or DPFlow, just check the dataset path in 
+
+```
+/path/to/sscls/datasets/paths.py.
 ```
