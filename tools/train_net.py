@@ -197,7 +197,9 @@ def train_model():
     # Define the loss function
     loss_fun = losses.get_loss_fun()
     # Construct the optimizer
-    optimizer = optim.construct_optimizer(model)
+
+    if not cfg.TRAIN.FINETUNE:
+        optimizer = optim.construct_optimizer(model)
 
     # Load checkpoint or initial weights
     start_epoch = 0
@@ -206,9 +208,48 @@ def train_model():
         checkpoint_epoch = cu.load_checkpoint(last_checkpoint, model, optimizer)
         logger.info('Loaded checkpoint from: {}'.format(last_checkpoint))
         start_epoch = checkpoint_epoch + 1
-    elif cfg.TRAIN.WEIGHTS:
+    elif cfg.TRAIN.WEIGHTS and not cfg.TRAIN.FINETUNE:
         cu.load_checkpoint(cfg.TRAIN.WEIGHTS, model)
         logger.info('Loaded initial weights from: {}'.format(cfg.TRAIN.WEIGHTS))
+    elif cfg.TRAIN.WEIGHTS and cfg.TRAIN.FINETUNE:
+
+        # freeze all layers but the last fc
+        for name, param in model.named_parameters():
+            if name not in ['module.head.fc.weight', 'module.head.fc.bias']:
+                param.requires_grad = False
+
+        # init the fc layer
+        model.module.head.fc.weight.data.normal_(mean=0.0, std=0.01)
+        model.module.head.fc.bias.data.zero_()
+
+        # load from pre-trained, before DistributedDataParallel constructor
+        print("=> loading checkpoint '{}'".format(cfg.TRAIN.WEIGHTS))
+        checkpoint = torch.load(cfg.TRAIN.WEIGHTS, map_location="cpu")
+
+        # rename moco pre-trained keys
+        state_dict = checkpoint['model_state']
+        for k in list(state_dict.keys()):
+            # retain only encoder_q up to before the embedding layer
+            if k.startswith('encoder_q') and not k.startswith('encoder_q.head.fc'):
+                # remove prefix
+                state_dict['module.'+k[len("encoder_q."):]] = state_dict[k]
+            # delete renamed or unused k
+            del state_dict[k]
+
+        start_epoch = 0
+        msg = model.load_state_dict(state_dict, strict=False)
+        assert set(msg.missing_keys) == {"module.head.fc.weight", "module.head.fc.bias"}
+        print("=> loaded pre-trained model '{}'".format(cfg.TRAIN.WEIGHTS))
+
+        for name, param in model.named_parameters():
+            print(name, param.requires_grad)
+
+        # optimize only the linear classifier
+        parameters = list(filter(lambda p: p.requires_grad, model.parameters()))
+        assert len(parameters) == 2  # fc.weight, fc.bias
+        optimizer = torch.optim.SGD(parameters, cfg.OPTIM.BASE_LR,
+                                    momentum=cfg.OPTIM.MOMENTUM,
+                                    weight_decay=cfg.OPTIM.WEIGHT_DECAY)
 
     # Compute precise time
     if start_epoch == 0 and cfg.PREC_TIME.ENABLED:
