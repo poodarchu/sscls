@@ -15,8 +15,6 @@ import torch
 from sscls.core.config import cfg
 from sscls.datasets.cifar10 import Cifar10
 from sscls.datasets.imagenet import ImageNet
-from sscls.datasets.imagenet_dp import ImageNetDP
-from sscls.datasets.imagenet_dp_moco import ImageNetDPMoCo
 from sscls.datasets.custom_loader import DPFlowDataLoader
 
 import sscls.datasets.paths as dp
@@ -25,8 +23,6 @@ import sscls.datasets.paths as dp
 _DATASET_CATALOG = {
     'cifar10': Cifar10,
     'imagenet': ImageNet,
-    'imagenet_dpflow': ImageNetDP,
-    'imagenet_dpflow_moco': ImageNetDPMoCo,
 }
 
 
